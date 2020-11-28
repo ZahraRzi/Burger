@@ -1,19 +1,21 @@
 import React from "react";
+import { NavLink } from "react-router-dom";
 import Style from "./NavigationItem.module.scss";
 
 interface NavigationItemProps {
     children: React.ReactNode;
-    link: string;
-    active?: boolean;
+  link: string;
+  exact?: boolean;
 }
 
 const NavigationItem: React.FC<NavigationItemProps> = (
   props
 ): React.ReactElement => {
-  const { children, link, active } = props;
+  const { children, link ,exact } = props;
   return (
     <li className={Style.NavigationItem}>
-      <a href={link} className={active ? Style.active : " "}>{children}</a>
+      <NavLink to={link} activeClassName={Style.active} exact = {exact}>{children}</NavLink>
+      {/* className={active ? Style.active : " "} ==> NavLink automatically adds active class */}
     </li>
   );
 };

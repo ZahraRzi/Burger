@@ -4,8 +4,8 @@ import Backdrop from "../Backdrop/Backdrop";
 
 interface ModalProps {
   children: JSX.Element;
-  show: boolean;
-  modalClosed: () => void;
+  show: boolean | null;
+  modalClosed?: () => void;
 }
 
 const Modal: React.FC<ModalProps> = (props): React.ReactElement => {

@@ -2,7 +2,7 @@ import React from "react";
 import Style from "./Backdrop.module.scss";
 
 interface BackdropProps {
-    show: boolean;
+    show: boolean | null;
     clicked?: () => void;
 }
 
