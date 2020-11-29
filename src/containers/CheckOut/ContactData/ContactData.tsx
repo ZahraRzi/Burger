@@ -4,6 +4,7 @@ import Button from "../../../components/UI/Button/Button";
 import instance from "../../../axios-order";
 import Spinner from "../../../components/UI/Spinner/Spinner";
 import { useHistory } from "react-router-dom";
+import Input from "../../../components/UI/Input/Input";
 
 interface ContactDataProps {
   ingredients: { [key: string]: number };
@@ -12,39 +13,115 @@ interface ContactDataProps {
 
 const ContactData: React.FC<ContactDataProps> = (props): React.ReactElement => {
   const { ingredients, price } = props;
-  console.log(props);
+  // console.log(props);
+  let formDataObj: Record<string, any> = {
+    name: {
+      elementType: "input",
+      elementConfig: {
+        type: "text",
+        placeholder: "Your Name",
+      },
+      value: "",
+      label: "Enter Your name",
+      validation: {
+        required: true,
+      },
+      valid: false,
+      touched: false,
+    },
+    street: {
+      elementType: "input",
+      elementConfig: {
+        type: "text",
+        placeholder: "Street",
+      },
+      value: "",
+      validation: {
+        required: true,
+      },
+      valid: false,
+      touched: false,
+    },
+    zipcode: {
+      elementType: "input",
+      elementConfig: {
+        type: "text",
+        placeholder: "ZIP Code",
+      },
+      value: "",
+      validation: {
+        required: true,
+        minLength: 5,
+        maxLength: 5,
+      },
+      valid: false,
+      touched: false,
+    },
+    country: {
+      elementType: "input",
+      elementConfig: {
+        type: "text",
+        placeholder: "Country",
+      },
+      value: "",
+      validation: {
+        required: true,
+      },
+      valid: false,
+      touched: false,
+    },
+    email: {
+      elementType: "input",
+      elementConfig: {
+        type: "email",
+        placeholder: "Your Mail",
+      },
+      value: "",
+      validation: {
+        required: true,
+      },
+      valid: false,
+      touched: false,
+    },
+    deliveryMethod: {
+      elementType: "select",
+      elementConfig: {
+        options: [
+          { value: "fastest", displayValue: "Fastest" },
+          { value: "cheapest", displayValue: "Cheapest" },
+        ],
+      },
+      value: "fastest",
+      valid: false,
+      validation: {},
+    },
+  };
   const [loading, setLoading] = useState(false);
   const history = useHistory();
-  console.log(history);
+  // console.log(history);
+  const [formData, setFormData] = useState(formDataObj);
+  const [formIsValid, setFormIsValid] = useState(false);
 
-  //   const form = {
-  //     name: "",
-  //     email: "",
-  //     address: {
-  //       street: "",
-  //       postalCode: "",
-  //     },
-  //   };
+  let formElementArray = [];
+  for (let key in formData) {
+    formElementArray.push({
+      id: key,
+      config: formData[key],
+    });
+  }
 
-  const submitHandler = (event: any) => {
+  const orderHandler = (event: any) => {
     event.preventDefault();
-  };
-
-  const orderHandler = () => {
-    // console.log(orderHandler)
+    setLoading(true);
+    const formFullData: Record<string, string> = {};
+    for (let formElementIdentifier in formData) {
+      formFullData[formElementIdentifier] =
+        formData[formElementIdentifier].value;
+    }
     const order = {
       ingredients: ingredients,
       price: price,
-      customer: {
-        name: "Zahra Rezaei",
-        address: {
-          street: "masile bakhtar",
-          zipcode: "4489165968",
-          country: "iran",
-        },
-        email: "zahra.1994rezaei@gmail.com",
-      },
-      deliveryMethod: "fastest",
+      orderData: formFullData,
     };
 
     instance
@@ -61,13 +138,59 @@ const ContactData: React.FC<ContactDataProps> = (props): React.ReactElement => {
       });
   };
 
+  const inputChangeHandler = (event: any, inputIdentifier: string) => {
+    const updatedFormDataObj = { ...formData };
+    const updatedFormData = { ...updatedFormDataObj[inputIdentifier] };
+    updatedFormData.value = event.target.value;
+    updatedFormData.valid = checkValidity(
+      updatedFormData.value,
+      updatedFormData.validation
+    );
+    updatedFormData.touched = true;
+    updatedFormDataObj[inputIdentifier] = updatedFormData;
+    console.log(updatedFormData);
+
+    let formIsValid = true;
+
+    formIsValid = updatedFormData.valid;
+
+    console.log(updatedFormData.valid);
+    setFormData(updatedFormDataObj);
+    setFormIsValid(formIsValid);
+  };
+
+  const checkValidity = (value: string, rules: any) => {
+    let isValid = true;
+    if (rules.required) {
+      isValid = value.trim() !== "" && isValid;
+    }
+    if (rules.minLength) {
+      isValid = value.length >= rules.minLength && isValid;
+    }
+    if (rules.minLength) {
+      isValid = value.length <= rules.maxLength && isValid;
+    }
+    return isValid;
+  };
+
   let form = (
-    <form onSubmit={submitHandler}>
-      <input type="text" name="name" placeholder="Your Name" />
-      <input type="email" name="email" placeholder="Your E-mail" />
-      <input type="text" name="street" placeholder="Your Street" />
-      <input type="text" name="postal" placeholder="Your Postal Code" />
-      <Button type="submit" btnType="Success" clicked={orderHandler}>
+    <form onSubmit={orderHandler}>
+      {formElementArray.map((formElement) => {
+        return (
+          <Input
+            key={formElement.id}
+            elementType={formElement.config.elementType}
+            elementConfig={formElement.config.elementConfig}
+            value={formElement.config.value}
+            label={formElement.config.label}
+            changed={(event) => inputChangeHandler(event, formElement.id)}
+            invalid={!formElement.config.valid}
+            shouldValidate={formElement.config.validation}
+            touched={formElement.config.touched}
+          />
+        );
+      })}
+      <Button type="submit" btnType="Success" disabled={formIsValid}>
         Order
       </Button>
     </form>
